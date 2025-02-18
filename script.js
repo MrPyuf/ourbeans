@@ -25,6 +25,7 @@ let enemySpeed = 1;
 let score = 0;
 let health = 3;
 
+// Player, enemy, and bullet sprite (using placeholder images)
 const playerImg = new Image();
 playerImg.src = 'https://via.placeholder.com/50/000000/FFFFFF?text=P';
 
@@ -34,18 +35,22 @@ enemyImg.src = 'https://via.placeholder.com/50/FF0000/FFFFFF?text=E';
 const bulletImg = new Image();
 bulletImg.src = 'https://via.placeholder.com/5/FFFFFF/FFFFFF?text=|';
 
+// Draw player
 function drawPlayer() {
     ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 }
 
+// Draw bullets
 function drawBullet(bullet) {
     ctx.drawImage(bulletImg, bullet.x, bullet.y, bullet.width, bullet.height);
 }
 
+// Draw enemies
 function drawEnemy(enemy) {
     ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
 }
 
+// Game update function
 function update() {
     if (gamePaused || gameOver) return;
 
@@ -73,7 +78,7 @@ function update() {
         }
     });
 
-    // Check for collisions
+    // Check for collisions between bullets and enemies
     bullets.forEach((bullet, bulletIndex) => {
         enemies.forEach((enemy, enemyIndex) => {
             if (bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x &&
@@ -85,7 +90,7 @@ function update() {
         });
     });
 
-    // Draw everything
+    // Draw the player, bullets, and enemies
     drawPlayer();
     bullets.forEach(bullet => drawBullet(bullet));
     enemies.forEach(enemy => drawEnemy(enemy));
@@ -98,7 +103,7 @@ function update() {
         return;
     }
 
-    // Spawn new wave of enemies if needed
+    // Spawn a new wave of enemies
     if (enemies.length === 0) {
         spawnEnemies();
         wave++;
@@ -107,6 +112,7 @@ function update() {
     requestAnimationFrame(update);
 }
 
+// Spawn enemies
 function spawnEnemies() {
     const rows = 3;
     const cols = 5;
@@ -125,12 +131,14 @@ function spawnEnemies() {
     }
 }
 
+// Handle player movement
 function movePlayer() {
     if (player.dx !== 0) {
         player.x += player.dx;
     }
 }
 
+// Handle key down events
 function keyDown(e) {
     if (gameOver || gamePaused) return;
 
@@ -149,17 +157,20 @@ function keyDown(e) {
     }
 }
 
+// Handle key up events
 function keyUp(e) {
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         player.dx = 0;
     }
 }
 
+// Pause or resume the game
 function pauseGame() {
     gamePaused = !gamePaused;
     pauseBtn.innerText = gamePaused ? 'Resume' : 'Pause';
 }
 
+// Game Over handler
 function gameOverHandler() {
     if (score > highScore) {
         highScore = score;
@@ -170,6 +181,7 @@ function gameOverHandler() {
     gameOverBtn.disabled = false;
 }
 
+// Update high score
 function updateHighScore() {
     if (score > highScore) {
         highScore = score;
