@@ -25,51 +25,45 @@ let enemySpeed = 1;
 let score = 0;
 let health = 3;
 
-// Player, enemy, and bullet sprite (using placeholder images)
 const playerImg = new Image();
 playerImg.src = 'https://via.placeholder.com/50/000000/FFFFFF?text=P';
+playerImg.onerror = () => console.error("Failed to load player image");
 
 const enemyImg = new Image();
 enemyImg.src = 'https://via.placeholder.com/50/FF0000/FFFFFF?text=E';
+enemyImg.onerror = () => console.error("Failed to load enemy image");
 
 const bulletImg = new Image();
 bulletImg.src = 'https://via.placeholder.com/5/FFFFFF/FFFFFF?text=|';
+bulletImg.onerror = () => console.error("Failed to load bullet image");
 
-// Draw player
 function drawPlayer() {
     ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 }
 
-// Draw bullets
 function drawBullet(bullet) {
     ctx.drawImage(bulletImg, bullet.x, bullet.y, bullet.width, bullet.height);
 }
 
-// Draw enemies
 function drawEnemy(enemy) {
     ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
 }
 
-// Game update function
 function update() {
     if (gamePaused || gameOver) return;
+    console.log("Game updating...");
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Move player
     player.x += player.dx;
     if (player.x < 0) player.x = 0;
     if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
 
-    // Move bullets
     bullets.forEach((bullet, index) => {
         bullet.y -= bullet.speed;
-        if (bullet.y < 0) {
-            bullets.splice(index, 1);
-        }
+        if (bullet.y < 0) bullets.splice(index, 1);
     });
 
-    // Move enemies
     enemies.forEach(enemy => {
         enemy.y += enemySpeed;
         if (enemy.y + enemy.height > canvas.height) {
@@ -78,24 +72,11 @@ function update() {
         }
     });
 
-    // Check for collisions between bullets and enemies
-    bullets.forEach((bullet, bulletIndex) => {
-        enemies.forEach((enemy, enemyIndex) => {
-            if (bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x &&
-                bullet.y < enemy.y + enemy.height && bullet.y + bullet.height > enemy.y) {
-                score += 10;
-                enemies.splice(enemyIndex, 1);
-                bullets.splice(bulletIndex, 1);
-            }
-        });
-    });
-
-    // Draw the player, bullets, and enemies
+    console.log("Enemies count: ", enemies.length);
     drawPlayer();
-    bullets.forEach(bullet => drawBullet(bullet));
-    enemies.forEach(enemy => drawEnemy(enemy));
+    bullets.forEach(drawBullet);
+    enemies.forEach(drawEnemy);
 
-    // Check for game over
     if (health <= 0) {
         gameOver = true;
         gameOverBtn.disabled = false;
@@ -103,7 +84,6 @@ function update() {
         return;
     }
 
-    // Spawn a new wave of enemies
     if (enemies.length === 0) {
         spawnEnemies();
         wave++;
@@ -112,8 +92,8 @@ function update() {
     requestAnimationFrame(update);
 }
 
-// Spawn enemies
 function spawnEnemies() {
+    console.log("Spawning enemies...");
     const rows = 3;
     const cols = 5;
     const width = 50;
@@ -131,70 +111,27 @@ function spawnEnemies() {
     }
 }
 
-// Handle player movement
-function movePlayer() {
-    if (player.dx !== 0) {
-        player.x += player.dx;
+document.addEventListener('keydown', (e) => {
+    console.log("Key Down:", e.key);
+    if (e.key === 'ArrowLeft') player.dx = -player.speed;
+    if (e.key === 'ArrowRight') player.dx = player.speed;
+    if (e.key === ' ') {
+        bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y, width: 5, height: 20, speed: 5 });
+        console.log("Bullet fired!");
     }
-}
+});
 
-// Handle key down events
-function keyDown(e) {
-    if (gameOver || gamePaused) return;
+document.addEventListener('keyup', (e) => {
+    console.log("Key Up:", e.key);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') player.dx = 0;
+});
 
-    if (e.key === 'ArrowLeft') {
-        player.dx = -player.speed;
-    } else if (e.key === 'ArrowRight') {
-        player.dx = player.speed;
-    } else if (e.key === ' ') {
-        bullets.push({
-            x: player.x + player.width / 2 - 2.5,
-            y: player.y,
-            width: 5,
-            height: 20,
-            speed: 5
-        });
-    }
-}
-
-// Handle key up events
-function keyUp(e) {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        player.dx = 0;
-    }
-}
-
-// Pause or resume the game
-function pauseGame() {
+pauseBtn.addEventListener('click', () => {
     gamePaused = !gamePaused;
     pauseBtn.innerText = gamePaused ? 'Resume' : 'Pause';
-}
+    console.log("Game Paused:", gamePaused);
+});
 
-// Game Over handler
-function gameOverHandler() {
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('highScore', highScore);
-        highScoreEl.innerText = highScore;
-    }
-    gameOver = true;
-    gameOverBtn.disabled = false;
-}
-
-// Update high score
-function updateHighScore() {
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('highScore', highScore);
-        highScoreEl.innerText = highScore;
-    }
-}
-
-pauseBtn.addEventListener('click', pauseGame);
 gameOverBtn.addEventListener('click', () => location.reload());
-
-document.addEventListener('keydown', keyDown);
-document.addEventListener('keyup', keyUp);
-
 spawnEnemies();
 update();
